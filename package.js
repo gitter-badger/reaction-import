@@ -11,19 +11,19 @@ Package.onUse(function(api) {
     'meteor-platform',
     'reactive-var',
     'coffeescript',
-    'reactioncommerce:core',
+    'less',
+    'reactioncommerce:core@0.5.0',
     'cfs:standard-packages',
   ]);
   api.addFiles([
-    'common/register.coffee',
+    'common/routing.coffee',
   ]);
   api.addFiles([
-    'common/app.coffee',
-    'common/routing.coffee',
     'template/settings.html',
     'template/settings.coffee',
   ], 'client');
   api.addFiles([
-    'server/methods.coffee'
+    'server/register.coffee',
+    'server/methods.coffee',
   ], 'server');
 });
