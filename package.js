@@ -1,8 +1,8 @@
 Package.describe({
   name: 'teachmefly:reaction-collections-admin',
   summary: 'Fast add data to mongodb collections',
-  version: '0.0.1',
-  //git: ' /* Fill me in! */ '
+  version: '0.0.2',
+  git: 'git@github.com:TeachMeFly/reaction-import.git',
 });
 
 Package.onUse(function(api) {
