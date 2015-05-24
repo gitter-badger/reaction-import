@@ -1,4 +1,4 @@
 reaction-import
 ===============
 
-Packege for reactioncommerce, that allow to import data into collections
+Package for reactioncommerce, that allows you to import data into collections
