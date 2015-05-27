@@ -1,26 +1,32 @@
 Package.describe({
   name: 'teachmefly:reaction-collections-admin',
   summary: 'Fast add data to mongodb collections',
-  version: '0.0.2',
+  version: '0.0.3',
   git: 'git@github.com:TeachMeFly/reaction-import.git',
 });
 
 Package.onUse(function(api) {
-  api.versionsFrom('1.0');
+  api.versionsFrom('METEOR@1.0');
   api.use([
-    'meteor-platform',
-    'reactive-var',
+    'meteor-platform@1.2.2',
+    'reactioncommerce:core@0.5.9',
     'coffeescript',
     'less',
-    'reactioncommerce:core@0.5.0',
+    'underscore',
+    'jquery',
+  ]);
+  api.use([
+    'reactive-var',
+    'http',
     'cfs:standard-packages',
   ]);
   api.addFiles([
     'common/routing.coffee',
-  ]);
+  ], 'client');
   api.addFiles([
     'template/settings.html',
     'template/settings.coffee',
+    'template/style.css',
   ], 'client');
   api.addFiles([
     'server/register.coffee',
