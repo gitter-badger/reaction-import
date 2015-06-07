@@ -1,9 +1,9 @@
 Router.map ->
-    @route 'import',
-        controller: ShopAdminController
-        path: 'dashboard/settings/import'
-        template: "collectionAdminSettings"
-        waitOn: ->
-            @subscribe "products"
-            @subscribe "tags"
-            return ReactionCore.Subscriptions.Packages
+  @route 'import',
+  controller: ShopAdminController
+  path: 'dashboard/settings/import'
+  template: "collectionAdminSettings"
+  waitOn: ->
+    @subscribe "products"
+    @subscribe "tags"
+    return ReactionCore.Subscriptions.Packages

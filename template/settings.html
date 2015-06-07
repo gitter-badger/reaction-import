@@ -1,73 +1,100 @@
 <template name="collectionAdminSettings">
-    <div class="row"><h2>Collections <small>Manager</small></h2></div>
-    <ul class="nav nav-tabs">
-        <li><a href="#download" data-toggle="tab">Download Dumps</a></li>
-        <li class="active"><a href="#upload" data-toggle="tab">Upload Dumps</a></li>
-        <li><a href="#settings" data-toggle="tab">Settings</a></li>
-    </ul>
+  <div class="row"><h2>Collections <small>Manager</small></h2></div>
+  <ul class="nav nav-tabs">
+    <li><a href="#download" data-toggle="tab">Download Dumps</a></li>
+    <li class="active"><a href="#upload" data-toggle="tab">Upload Dumps</a></li>
+    <li><a href="#settings" data-toggle="tab">Settings</a></li>
+  </ul>
 
-    <div class="tab-content">
-        <div class="tab-pane" id="download">
-            <div class="well">
-                <p>Download</p>
-            </div>
-        </div>
-        {{> importTab}}
-        <div class="tab-pane" id="settings">
-            <div class="well">
-                <p>Settings</p>
-            </div>
-        </div>
+  <div class="tab-content">
+    <div class="tab-pane" id="download">
+      <div class="well">
+        <p>Download</p>
+      </div>
     </div>
+    {{> importTab}}
+    <div class="tab-pane" id="settings">
+      <div class="well">
+        <p>Settings</p>
+      </div>
+    </div>
+  </div>
 </template>
 
 <template name="importTab">
-        <div class="tab-pane" id="download">
-            <div class="well">
-                <p>Download</p>
-            </div>
-        </div>
-        <div class="tab-pane active" id="upload">
-            <div id="dropzone" class="well">
-                <p>Upload</p>
-                <span id="product-alerts">{{>bootstrapAlerts placement="collectionAdminImport"}}</span>
-                {{#unless importData}}<div class="well">Drop files here</div>{{/unless}}
-                {{#each importData}}
-                    <div class="panel panel-default">
-                        <div class="panel-heading">{{name}}</div>
+  <div class="tab-pane" id="download">
+    <div class="well">
+      <p>Download</p>
+    </div>
+  </div>
+  <div class="tab-pane active" id="upload">4
+    <!-- Import tab -->
+    <div class="panel panel-default">
+      <div class="panel-heading"><strong>Upload Files</strong> <small>Bootstrap files upload</small></div>
+      <div class="panel-body">
 
-                            {{>fileInfo getDataObject}}
-
-                    </div>
-                {{/each}}
+        <!-- Standart Form -->
+        <h4>Select files from your computer</h4>
+        <form id="upload-form">
+          <div class="form-inline">
+            <div class="form-group">
+              <input type="file" name="files[]" class="upload-files" multiple>
             </div>
+            <button type="submit" class="btn btn-sm btn-primary" id="upload-submit">Upload files</button>
+          </div>
+        </form>
+
+        <!-- Drop Zone -->
+        <h4>Or drag and drop files below</h4>
+        <div class="upload-drop-zone" id="drop-zone">
+          Just drag and drop files here
         </div>
+
+        <!-- Progress Bar -->
+        <!-- <div class="progress">
+        <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;">
+        <span class="sr-only">60% Complete</span>
+      </div>
+    </div> -->
+
+    <!-- Upload Finished -->
+    <div class="js-upload-finished">
+      <h3>Processed files</h3>
+      <div class="list-group">
+        <a href="#" class="list-group-item list-group-item-success"><span class="badge alert-success pull-right">Success</span>image-01.jpg</a>
+        <a href="#" class="list-group-item list-group-item-success"><span class="badge alert-success pull-right">Success</span>image-02.jpg</a>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- End of import tab -->
+</div>
 </template>
 
 <template name="fileInfo">
-    {{#unless get.length}}<div>Loading...</div>{{/unless}}
-    <div class="panel-body">
-        <span>Items found: {{get.length}}</span>
-        <span><button id="save" type="button" class="btn btn-default">save to collection</button></span>
-    </div>
-    <ul class="list-group">
-        {{#each get}}
-            <li class="list-group-item importItem">
-                <a href="#" class="list-group-item-heading">{{title}}</a>
-                <div class="list-group-item-text hide">
-                    <table class="table table-striped">
-                        <tbody>
-                            {{#each variants}}
-                                <tr>
-                                    <td>{{title}}</td>
-                                    <td>{{price}}</td>
-                                </tr>
-                            {{/each}}
-                        </tbody>
-                    </table>
-                </div>
+  {{#unless get.length}}<div>Loading...</div>{{/unless}}
+  <div class="panel-body">
+    <span>Items found: {{get.length}}</span>
+    <span><button id="save" type="button" class="btn btn-default">save to collection</button></span>
+  </div>
+  <ul class="list-group">
+    {{#each get}}
+    <li class="list-group-item importItem">
+      <a href="#" class="list-group-item-heading">{{title}}</a>
+      <div class="list-group-item-text hide">
+        <table class="table table-striped">
+          <tbody>
+            {{#each variants}}
+            <tr>
+              <td>{{title}}</td>
+              <td>{{price}}</td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
 
-            </li>
-        {{/each}}
-    </ul>
+    </li>
+    {{/each}}
+  </ul>
 </template>

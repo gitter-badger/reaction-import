@@ -1,9 +1,7 @@
 ReactionCore.registerPackage
   name: 'reaction-import' # usually same as meteor package
-  autoEnable: false # auto-enable in dashboard
-  settings:
-    url: ""
-  
+  autoEnable: true # auto-enable in dashboard
+ 
   registry: [
     # all options except route and template
     # are used to describe the
