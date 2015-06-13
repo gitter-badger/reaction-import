@@ -38,11 +38,47 @@ fileHandler = (file) ->
   reader = new FileReader
   reader.onloadend = (event) ->
     dataObject = EJSON.parse event.target.result
-    console.log dataObject
+    dataObject.forEach objectElementHandler
 
   reader.readAsText file, 'utf-8'
 
   console.log file.type
+
+# We need global threads var set to 0 when start
+threads = 0
+objectElementHandler = (item) ->
+  console.log threads
+  if threads < 4
+    threads += 1
+    if !item.parentId
+      item.parentId = ''
+    Meteor.call "updateHeaderTags", item.name, null, item.parentId, (error, result) ->
+      if error
+        console.log error
+        #throw new Meteor.Error "something wrong"
+      current = Tags.findOne("name":item.name)
+
+      if item.childs && item.childs.length && current
+        item.childs.forEach (child) ->
+          child.parentId = current._id
+        item.childs.forEach objectElementHandler
+
+      if item.products && item.products.length && current
+        item.products.forEach (product) ->
+          product.parentId = current._id
+        item.products.forEach (item) ->
+          console.log item
+      threads = threads - 1
+  else
+    Meteor.setTimeout () ->
+      objectElementHandler item
+    , 100
+#  if item.type == "category" && item.childs
+#    console.log item.type, item.name
+#  else if item.type == "product"
+#    console.log item.type, item.name
+#  else
+#    console.log "unknown element type"
 
 saveHandlerold = (item) ->
   if item.length
