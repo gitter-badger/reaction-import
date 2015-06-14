@@ -8,8 +8,8 @@ Package.describe({
 Package.onUse(function(api) {
   api.versionsFrom('METEOR@1.0');
   api.use([
-    'meteor-platform@1.2.2',
-    'reactioncommerce:core@0.5.9',
+    'meteor-platform',
+    'reactioncommerce:core',
     'coffeescript',
     'less',
     'underscore',
