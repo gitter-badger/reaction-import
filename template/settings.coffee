@@ -42,13 +42,13 @@ fileHandler = (file) ->
 
   reader.readAsText file, 'utf-8'
 
-  console.log file.type
-
 # We need global threads var set to 0 when start
 threads = 0
+max_threads = 4
+
 objectElementHandler = (item) ->
   console.log threads
-  if threads < 4
+  if threads < max_threads
     threads += 1
     if !item.parentId
       item.parentId = ''
@@ -65,20 +65,33 @@ objectElementHandler = (item) ->
 
       if item.products && item.products.length && current
         item.products.forEach (product) ->
+          product.parentName = item.name
           product.parentId = current._id
-        item.products.forEach (item) ->
-          console.log item
+        item.products.forEach objectProductHandler
       threads = threads - 1
   else
     Meteor.setTimeout () ->
       objectElementHandler item
     , 100
-#  if item.type == "category" && item.childs
-#    console.log item.type, item.name
-#  else if item.type == "product"
-#    console.log item.type, item.name
-#  else
-#    console.log "unknown element type"
+objectProductHandler = (item) ->
+  console.log threads
+  if threads < max_threads
+    threads += 1
+    Meteor.call "createProduct", (error, result) ->
+      if error
+        console.log error
+      currentProductId = result
+      Meteor.call "updateProductField", currentProductId, "title", item.name, (error, result) ->
+        if error
+          console.log error
+        Meteor.call "updateProductTags", currentProductId, item.parentName, item.parentId, (error, result) ->
+          if error
+            console.log error
+          threads = threads - 1
+  else
+    Meteor.setTimeout () ->
+      objectProductHandler item
+    , 100
 
 saveHandlerold = (item) ->
   if item.length
