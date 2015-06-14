@@ -1,8 +1,8 @@
 Package.describe({
-  name: 'teachmefly:reaction-collections-admin',
+  name: 'dukeondope:reaction-data-manager',
   summary: 'Fast add data to mongodb collections',
   version: '0.0.3',
-  git: 'git@github.com:TeachMeFly/reaction-import.git',
+  git: 'https://github.com/dukeondope/reaction-import.git',
 });
 
 Package.onUse(function(api) {
