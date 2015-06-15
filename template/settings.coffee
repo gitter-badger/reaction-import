@@ -1,25 +1,20 @@
 Template.importTab.created = ->
   @importData = new ReactiveVar new Array
 
-Template.importTab.helpers
-"importData": ->
-  return Template.instance().importData.get()
-"getDataObject": ->
-  DataObject = new ReactiveVar new Array
-  reader = new FileReader
-  reader.onloadend = (event) ->
-    DataObject.set EJSON.parse event.target.result
-    #console.log DataObject.get()
-  reader.readAsText @, 'utf-8'
-  return DataObject
-
-
-
 Template.importTab.events
   "submit #upload-form": (event, template) ->
     event.preventDefault()
     files = event.currentTarget.getElementsByClassName('upload-files').item(0).files
-    _.forEach files, fileHandler
+    _.forEach files, (file) ->
+      unless /.+\/json$/.test file.type
+        throw new Meteor.Error "Invalid filetype"
+      reader = new FileReader
+      reader.onloadend = (event) ->
+        dataObject = EJSON.parse event.target.result
+        Meteor.call "parseData", dataObject, (error, result) ->
+          console.log error
+
+      reader.readAsText file, 'utf-8'
 
   #"dropped #drop-zone": (event, template) ->
     #saveHandler event
@@ -32,159 +27,6 @@ Template.importTab.events
         # importData.push file
         # template.importData.set importData
 
-fileHandler = (file) ->
-  unless /.+\/json$/.test file.type
-    throw new Meteor.Error "Invalid filetype"
-  reader = new FileReader
-  reader.onloadend = (event) ->
-    dataObject = EJSON.parse event.target.result
-    dataObject.forEach objectElementHandler
-
-  reader.readAsText file, 'utf-8'
-
-# We need global threads var set to 0 when start
-threads = 0
-max_threads = 4
-
-objectElementHandler = (item) ->
-  console.log threads
-  if threads < max_threads
-    threads += 1
-    if !item.parentId
-      item.parentId = ''
-    Meteor.call "updateHeaderTags", item.name, null, item.parentId, (error, result) ->
-      if error
-        console.log error
-        #throw new Meteor.Error "something wrong"
-      current = Tags.findOne("name":item.name)
-
-      if item.childs && item.childs.length && current
-        item.childs.forEach (child) ->
-          child.parentId = current._id
-        item.childs.forEach objectElementHandler
-
-      if item.products && item.products.length && current
-        item.products.forEach (product) ->
-          product.parentName = item.name
-          product.parentId = current._id
-        item.products.forEach objectProductHandler
-      threads = threads - 1
-  else
-    Meteor.setTimeout () ->
-      objectElementHandler item
-    , 100
-objectProductHandler = (item) ->
-  console.log threads
-  if threads < max_threads
-    threads += 1
-    Meteor.call "createProduct", (error, result) ->
-      if error
-        console.log error
-      currentProductId = result
-      Meteor.call "updateProductField", currentProductId, "title", item.name, (error, result) ->
-        if error
-          console.log error
-        Meteor.call "updateProductTags", currentProductId, item.parentName, item.parentId, (error, result) ->
-          if error
-            console.log error
-          threads = threads - 1
-  else
-    Meteor.setTimeout () ->
-      objectProductHandler item
-    , 100
-
-saveHandlerold = (item) ->
-  if item.length
-    item.addClass('list-group-item-warning')
-    elementData = Blaze.getData item.get 0
-    # updateTags
-    saveTags elementData.tags.split('/'), null, ->
-      saveProduct elementData, ->
-        console.log "row saved"
-        item.removeClass('list-group-item-warning').addClass('list-group-item-success')
-        Meteor.setTimeout ->
-          saveHandler item.next()
-          ,3000
-
-saveTags = (data, parentId, cb) ->
-  currentTag = data.shift().match(/^\s*(.+?)\s*$/)[1]
-  Meteor.call "updateHeaderTags", currentTag, null, parentId, (error) ->
-    if error
-      throw new Error "somethind wrong in tags"
-    currentTagInstance = Tags.findOne "name":currentTag
-    unless data.length
-      cb()
-      return
-    saveTags data, currentTagInstance._id, cb
-
-saveProduct = (data, cb) ->
-  Meteor.call "createProduct", (error, result) ->
-    currentId = result
-    Products.update(currentId, {$set: {isVisible: data.isVisible}})
-    Meteor.call "updateProductField", currentId, "title", data.title, ->
-      Meteor.call "updateProductField", currentId, "pageTitle", data.pageTitle, ->
-        Meteor.call "updateProductField", currentId, "vendor", data.vendor, ->
-          Meteor.call "updateProductField", currentId, "description", data.description, ->
-            productSetTags currentId, data, ->
-              productSetVariants currentId, data.variants, ->
-                console.log currentId
-                cb()
-
-productSetTags = (currentId, data, cb) ->
-  tags = data.tags.split '/'
-  setTag = (tagsArray, setTagCb) ->
-    currentTag = tagsArray.shift().match(/^\s*(.+?)\s*$/)[1]
-    currentTagInstance = Tags.findOne "name":currentTag
-    Meteor.call "updateProductTags", currentId, currentTag, null, null, (error) ->
-      if error
-        throw new Error error
-        unless tagsArray.length
-          Meteor.call "setHandleTag", currentId, currentTagInstance._id, (error) ->
-            if error
-              throw new Error error
-              setTagCb()
-              return
-              setTag tagsArray, setTagCb
-              setTag tags, cb
-
-productSetVariants = (currentId, variants, cb) ->
-  currentVariant = variants.pop()
-  unless currentVariant
-    variantInstance = Products.findOne({"_id": currentId})
-    Meteor.call "deleteVariant", variantInstance.variants[0]._id, ->
-      cb()
-      return
-    Meteor.call "createVariant", currentId, ->
-      variantInstance = Products.findOne({"_id": currentId})
-      variantModel =
-        "_id": variantInstance.variants[variantInstance.variants.length - 1]._id
-        "title": currentVariant.title
-        "price": currentVariant.price
-        "weight": 35
-        "inventoryQuantity": 10
-        "inventoryManagement": true
-        "inventoryPolicy": true
-        "taxable": true
-      Meteor.call "updateVariant", variantModel, ->
-        variantAddImage currentId, variantModel._id, currentVariant.image, variantInstance.variants.length - 1, ->
-          productSetVariants currentId, variants, cb
-
-variantAddImage = (currentId, variantId, image, count, cb) ->
-  unless image
-    cb()
-    return
-    file = new FS.File
-    file.attachData image.binarydata, {type:image.type}
-    file.name image.name
-    file.metadata =
-      ownerId: Meteor.userId()
-      productId: currentId
-      variantId: variantId
-      shopId: ReactionCore.getShopId()
-      priority: count
-    console.log file
-    ReactionCore.Collections.Media.insert file, ->
-      cb()
 
 Template.fileInfo.events
   "click #save": (event, template) ->
